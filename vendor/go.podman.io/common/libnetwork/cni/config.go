@@ -294,6 +294,11 @@ func createVxlan(network *types.Network) error {
 			}
 			// rust only support "true" or "false" while go can parse 1 and 0 as well so we need to change it
 			network.Options[types.NoDefaultRoute] = strconv.FormatBool(val)
+		case types.VXLANPortOption:
+			_, err := strconv.ParseUint(value, 10, 16)
+			if err != nil {
+				return fmt.Errorf("invalid vxlan_port value %q: %w", value, err)
+			}
 		default:
 			return fmt.Errorf("unsupported vxlan network option %s", key)
 		}

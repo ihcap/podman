@@ -49,6 +49,7 @@ const (
 	NoDefaultRoute = "no_default_route"
 	BclimOption    = "bclim"
 	VRFOption      = "vrf"
+	VXLANPortOption = "vxlan_port"
 )
 
 type NetworkBackend string
