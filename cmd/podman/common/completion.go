@@ -1870,7 +1870,7 @@ func AutocompleteNetworkFilters(cmd *cobra.Command, args []string, toComplete st
 	kv := keyValueCompletion{
 		"dangling=": getBoolCompletion,
 		"driver=": func(_ string) ([]string, cobra.ShellCompDirective) {
-			return []string{types.BridgeNetworkDriver, types.MacVLANNetworkDriver, types.IPVLANNetworkDriver}, cobra.ShellCompDirectiveNoFileComp
+			return []string{types.BridgeNetworkDriver, types.MacVLANNetworkDriver, types.IPVLANNetworkDriver, types.VXLANNetworkDriver}, cobra.ShellCompDirectiveNoFileComp
 		},
 		"id=":    func(s string) ([]string, cobra.ShellCompDirective) { return getNetworks(cmd, s, completeIDs) },
 		"label=": nil,

@@ -80,7 +80,7 @@ func createNetworkFromCNIConfigList(conf *libcni.NetworkConfigList, confPath str
 			return nil, err
 		}
 
-	case types.MacVLANNetworkDriver, types.IPVLANNetworkDriver:
+	case types.MacVLANNetworkDriver, types.IPVLANNetworkDriver, types.VXLANNetworkDriver:
 		var vlan VLANConfig
 		err := json.Unmarshal(firstPlugin.Bytes, &vlan)
 		if err != nil {
@@ -312,6 +312,8 @@ func (n *cniNetwork) createCNIConfigListFromNetwork(network *types.Network, writ
 
 	case types.MacVLANNetworkDriver:
 		plugins = append(plugins, newVLANPlugin(types.MacVLANNetworkDriver, network.NetworkInterface, opts.vlanPluginMode, opts.mtu, ipamConf))
+	case types.VXLANNetworkDriver:
+		plugins = append(plugins, newVLANPlugin(types.VXLANNetworkDriver, network.NetworkInterface, opts.vlanPluginMode, opts.mtu, ipamConf))
 
 	case types.IPVLANNetworkDriver:
 		plugins = append(plugins, newVLANPlugin(types.IPVLANNetworkDriver, network.NetworkInterface, opts.vlanPluginMode, opts.mtu, ipamConf))
@@ -427,6 +429,9 @@ func parseOptions(networkOptions map[string]string, networkDriver string) (*opti
 				if !slices.Contains(types.ValidIPVLANModes, v) {
 					return nil, fmt.Errorf("unknown ipvlan mode %q", v)
 				}
+			case types.VXLANNetworkDriver:
+				// VXLAN doesn't have specific mode validation like macvlan/ipvlan
+				// but we still need to handle the mode option
 			default:
 				return nil, fmt.Errorf("cannot set option \"mode\" with driver %q", networkDriver)
 			}

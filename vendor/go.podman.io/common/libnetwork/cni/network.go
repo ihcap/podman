@@ -145,7 +145,7 @@ func NewCNINetworkInterface(conf *InitConfig) (types.ContainerNetwork, error) {
 // Drivers will return the list of supported network drivers
 // for this interface.
 func (n *cniNetwork) Drivers() []string {
-	return []string{types.BridgeNetworkDriver, types.MacVLANNetworkDriver, types.IPVLANNetworkDriver}
+	return []string{types.BridgeNetworkDriver, types.MacVLANNetworkDriver, types.IPVLANNetworkDriver, types.VXLANNetworkDriver}
 }
 
 // DefaultNetworkName will return the default cni network name.

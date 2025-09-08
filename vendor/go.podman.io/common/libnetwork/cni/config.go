@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"slices"
+	"strconv"
 
 	"github.com/sirupsen/logrus"
 	internalutil "go.podman.io/common/libnetwork/internal/util"
@@ -92,6 +93,11 @@ func (n *cniNetwork) networkCreate(newNetwork *types.Network, defaultNet bool) (
 		}
 	case types.MacVLANNetworkDriver, types.IPVLANNetworkDriver:
 		err = createIPMACVLAN(newNetwork)
+		if err != nil {
+			return nil, err
+		}
+	case types.VXLANNetworkDriver:
+		err = createVxlan(newNetwork)
 		if err != nil {
 			return nil, err
 		}
@@ -241,6 +247,56 @@ func validateIPAMDriver(n *types.Network) error {
 		}
 	default:
 		return fmt.Errorf("unsupported ipam driver %q", ipamDriver)
+	}
+	return nil
+}
+
+func createVxlan(network *types.Network) error {
+	// VXLAN networks typically don't support DNS
+	network.DNSEnabled = false
+
+	// Set default IPAM driver if not specified
+	switch network.IPAMOptions[types.Driver] {
+	case "":
+		if len(network.Subnets) == 0 {
+			// If no subnets specified, use DHCP
+			network.IPAMOptions[types.Driver] = types.DHCPIPAMDriver
+		} else {
+			network.IPAMOptions[types.Driver] = types.HostLocalIPAMDriver
+		}
+	case types.HostLocalIPAMDriver:
+		if len(network.Subnets) == 0 {
+			return fmt.Errorf("vxlan driver needs at least one subnet specified when the host-local ipam driver is set")
+		}
+	case types.DHCPIPAMDriver:
+		if len(network.Subnets) > 0 {
+			return errors.New("ipam driver dhcp set but subnets are set")
+		}
+	}
+
+	// Validate VXLAN-specific options
+	for key, value := range network.Options {
+		switch key {
+		case types.MTUOption:
+			_, err := internalutil.ParseMTU(value)
+			if err != nil {
+				return err
+			}
+		case types.MetricOption:
+			_, err := strconv.ParseUint(value, 10, 32)
+			if err != nil {
+				return err
+			}
+		case types.NoDefaultRoute:
+			val, err := strconv.ParseBool(value)
+			if err != nil {
+				return err
+			}
+			// rust only support "true" or "false" while go can parse 1 and 0 as well so we need to change it
+			network.Options[types.NoDefaultRoute] = strconv.FormatBool(val)
+		default:
+			return fmt.Errorf("unsupported vxlan network option %s", key)
+		}
 	}
 	return nil
 }

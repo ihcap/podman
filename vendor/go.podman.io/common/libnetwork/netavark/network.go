@@ -165,7 +165,7 @@ func NewNetworkInterface(conf *InitConfig) (types.ContainerNetwork, error) {
 	return n, nil
 }
 
-var builtinDrivers = []string{types.BridgeNetworkDriver, types.MacVLANNetworkDriver, types.IPVLANNetworkDriver}
+var builtinDrivers = []string{types.BridgeNetworkDriver, types.MacVLANNetworkDriver, types.IPVLANNetworkDriver, types.VXLANNetworkDriver}
 
 // Drivers will return the list of supported network drivers
 // for this interface.

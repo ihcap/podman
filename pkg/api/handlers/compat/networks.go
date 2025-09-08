@@ -221,11 +221,11 @@ func CreateNetwork(w http.ResponseWriter, r *http.Request) {
 				network.NetworkInterface = optVal
 			}
 		case nettypes.ModeOption:
-			if network.Driver == nettypes.MacVLANNetworkDriver || network.Driver == nettypes.IPVLANNetworkDriver {
+			if network.Driver == nettypes.MacVLANNetworkDriver || network.Driver == nettypes.IPVLANNetworkDriver || network.Driver == nettypes.VXLANNetworkDriver {
 				network.Options[opt] = optVal
 			}
 		case "parent":
-			if network.Driver == nettypes.MacVLANNetworkDriver || network.Driver == nettypes.IPVLANNetworkDriver {
+			if network.Driver == nettypes.MacVLANNetworkDriver || network.Driver == nettypes.IPVLANNetworkDriver || network.Driver == nettypes.VXLANNetworkDriver {
 				network.NetworkInterface = optVal
 			}
 		default:
