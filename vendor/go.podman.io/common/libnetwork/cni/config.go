@@ -9,6 +9,7 @@ import (
 	"os"
 	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	internalutil "go.podman.io/common/libnetwork/internal/util"
@@ -298,6 +299,29 @@ func createVxlan(network *types.Network) error {
 			_, err := strconv.ParseUint(value, 10, 16)
 			if err != nil {
 				return fmt.Errorf("invalid vxlan_port value %q: %w", value, err)
+			}
+		case types.VXLANVNIOption:
+			_, err := strconv.ParseUint(value, 10, 24)
+			if err != nil {
+				return fmt.Errorf("invalid vni value %q: %w", value, err)
+			}
+		case types.VXLANLocalIPOption:
+			if net.ParseIP(value) == nil {
+				return fmt.Errorf("invalid local_ip value %q: not a valid IP address", value)
+			}
+		case types.VXLANRemoteIPsOption:
+			// remote_ips can be a comma-separated list of IP addresses
+			ips := strings.Split(value, ",")
+			for _, ip := range ips {
+				ip = strings.TrimSpace(ip)
+				if net.ParseIP(ip) == nil {
+					return fmt.Errorf("invalid remote_ips value %q: %q is not a valid IP address", value, ip)
+				}
+			}
+		case types.VXLANPhysicalInterfaceOption:
+			// Validate that the physical interface name is not empty
+			if strings.TrimSpace(value) == "" {
+				return fmt.Errorf("physical_interface cannot be empty")
 			}
 		default:
 			return fmt.Errorf("unsupported vxlan network option %s", key)
