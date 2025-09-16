@@ -179,6 +179,39 @@ class NetworkTestCase(APITestCase):
         self.assertEqual(prune.status_code, 200, prune.text)
         self.assertTrue(prune_name in prune.json()["NetworksDeleted"])
 
+    def test_create_vxlan_network(self):
+        """Create a vxlan network via API with options"""
+        payload = {
+            "Name": "TestVXLANNet",
+            "Driver": "vxlan",
+            "Options": {
+                "vni": "42",
+                "vxlan_port": "4789"
+            },
+            "IPAM": {
+                "Config": [
+                    {"Subnet": "10.99.0.0/24"}
+                ]
+            }
+        }
+        resp = requests.post(self.podman_url + "/v1.40/networks/create", json=payload)
+        self.assertEqual(resp.status_code, 201, resp.text)
+        ident = resp.json()["Id"]
+
+        # Inspect and verify driver and options are set
+        inspect = requests.get(self.podman_url + f"/v1.40/networks/{ident}")
+        self.assertEqual(inspect.status_code, 200, inspect.text)
+        net = inspect.json()
+        self.assertEqual(net["Driver"], "vxlan")
+        self.assertIn("vni", net["Options"])
+        self.assertEqual(net["Options"]["vni"], "42")
+        self.assertIn("vxlan_port", net["Options"])
+        self.assertEqual(net["Options"]["vxlan_port"], "4789")
+
+        # Cleanup
+        delete = requests.delete(self.podman_url + f"/v1.40/networks/{ident}")
+        self.assertEqual(delete.status_code, 204, delete.text)
+
 
 if __name__ == "__main__":
     unittest.main()

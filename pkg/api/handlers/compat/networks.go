@@ -228,8 +228,16 @@ func CreateNetwork(w http.ResponseWriter, r *http.Request) {
 			if network.Driver == nettypes.MacVLANNetworkDriver || network.Driver == nettypes.IPVLANNetworkDriver || network.Driver == nettypes.VXLANNetworkDriver {
 				network.NetworkInterface = optVal
 			}
+		// Pass-through VXLAN-specific options; backend will validate
+		case nettypes.VXLANPortOption,
+			nettypes.VXLANVNIOption,
+			nettypes.VXLANLocalIPOption,
+			nettypes.VXLANRemoteIPsOption,
+			nettypes.VXLANPhysicalInterfaceOption:
+			network.Options[opt] = optVal
+		// Pass through any other options to let backend perform validation
 		default:
-			responseWarning = "\"" + opt + ": " + optVal + "\" is not a recognized option"
+			network.Options[opt] = optVal
 		}
 	}
 
