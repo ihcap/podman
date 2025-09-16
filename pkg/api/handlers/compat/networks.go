@@ -220,6 +220,11 @@ func CreateNetwork(w http.ResponseWriter, r *http.Request) {
 			if network.Driver == nettypes.BridgeNetworkDriver {
 				network.NetworkInterface = optVal
 			}
+		case "interface_name":
+			// Some clients send interface_name; for vxlan/macvlan/ipvlan map to interface field and do not forward
+			if network.Driver == nettypes.MacVLANNetworkDriver || network.Driver == nettypes.IPVLANNetworkDriver || network.Driver == nettypes.VXLANNetworkDriver || network.Driver == nettypes.BridgeNetworkDriver {
+				network.NetworkInterface = optVal
+			}
 		case nettypes.ModeOption:
 			if network.Driver == nettypes.MacVLANNetworkDriver || network.Driver == nettypes.IPVLANNetworkDriver || network.Driver == nettypes.VXLANNetworkDriver {
 				network.Options[opt] = optVal

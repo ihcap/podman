@@ -33,6 +33,16 @@ func CreateNetwork(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Map alias option names before backend validation
+	if network.Options == nil {
+		network.Options = map[string]string{}
+	}
+	if iface, ok := network.Options["interface_name"]; ok {
+		// For vxlan/macvlan/ipvlan/bridge, map to interface field and remove option
+		network.NetworkInterface = iface
+		delete(network.Options, "interface_name")
+	}
+
 	query := struct {
 		IgnoreIfExists bool `schema:"ignoreIfExists"`
 	}{}
